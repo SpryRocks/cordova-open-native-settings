@@ -34,7 +34,7 @@ public class NativeSettings extends CordovaPlugin {
 
         //Information on settings can be found here:
         //http://developer.android.com/reference/android/provider/Settings.html
-		
+
 		action = args.getString(0);
 		Intent intent = null;
 
@@ -59,12 +59,11 @@ public class NativeSettings extends CordovaPlugin {
         else if (action.equals("battery_optimization")) {
             intent = new Intent(android.provider.Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS);
         } else if (action.equals("biometric")) {
-
             intent = new Intent();
             // Uncomment the below code when Cordova supports Android 30 / R
-			/*if(android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.R){
+			if(android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.R){
                 intent = new Intent(android.provider.Settings.ACTION_BIOMETRIC_ENROLL);
-            } else */ if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            } else if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
                 intent = new Intent(android.provider.Settings.ACTION_FINGERPRINT_ENROLL);
             } else {
                 // Atleast open the settings landing page
@@ -169,14 +168,22 @@ public class NativeSettings extends CordovaPlugin {
              callbackContext.sendPluginResult(new PluginResult(status, result));
         	return false;
         }
-        
+
         if(args.length() > 1 && args.getBoolean(1)) {
         	intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         }
-        this.cordova.getActivity().startActivity(intent);
-        
-        callbackContext.sendPluginResult(new PluginResult(status, result));
-        return true;
+
+        try {
+          this.cordova.getActivity().startActivity(intent);
+
+          callbackContext.sendPluginResult(new PluginResult(status, result));
+          return true;
+        } catch (Throwable e) {
+          e.printStackTrace();
+          result = e.getMessage();
+          status = PluginResult.Status.INVALID_ACTION;
+          callbackContext.sendPluginResult(new PluginResult(status, result));
+          return false;
+        }
     }
 }
-
